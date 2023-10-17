@@ -1,53 +1,69 @@
 import numpy as np
-import typing
+import matplotlib.pyplot as plt
 
 
 class Neuron:
-    '''
-    a single neuron for feedforward nn
-    complex representation
-    '''
-
-    def __init__(self, name: str, layer: int):
-        '''
-        Creates a randomized neuron with no current state
-        '''
-        self.name = name
+    def __init__(self, layer: int, bias: float = 0.01):
+        self.bias = bias
         self.layer = layer
-        # input,  weight, current_state
-        # output, bias, new_state
-        self.neuron = np.random.randn(2, 2)
-        self.state = None
-        self.connections = {}
+        # Making neuron a 2D matrix for weights
+        self.weights = np.random.randn(3, 2)
+        self.current_state = self.activate(self.weights + self.bias)
 
-    def train(self, parent: object):
-        '''
-        feed-forward updating of neuron from parent
-        if input layer, input is parent
-        - Other: Neuron
-        '''
-        # project
-        self.neuron = np.dot(self.neuron, parent.neuron)
-        # activate
-        self.state = np.tanh(self.neuron)
-        return self.state
+    def activate(self, x: np.ndarray) -> np.ndarray:
+        """The activation function (tanh)."""
+        return np.tanh(x)
 
-    def set_params(self, params):
-        '''
-        Set the neural parameters matrix
-        '''
-        self.neuron = params
+    def activate_derivative(self, x: np.ndarray) -> np.ndarray:
+        """Derivative of the activation function."""
+        return 1.0 - np.tanh(x) ** 2
 
-    def get_params(self):
-        '''
-        Get the neural parameters matrix
-        '''
-        print(self.neuron)
-        return self.neuron
+    def forward(self, inputs: np.ndarray) -> np.ndarray:
+        """Calculate neuron output."""
+        # Multiplying the inputs with the weight matrix and adding bias
+        self.weights = self.activate(
+            np.cross(self.weights, inputs) + self.bias)
+        self.current_state = self.weights
+        return self.current_state
+
+    def show_state(self):
+        '''Graph current state in activation function'''
+        print(self.current_state)
+        plt.title(self.layer)
+        plt.plot(self.current_state)
+        plt.show()
+
+    def set_params(self, weights: np.ndarray, bias: float) -> None:
+        """Set the neuron parameters."""
+        self.weights = weights
+        self.bias = bias
+
+    def get_params(self) -> tuple:
+        """Get the neuron parameters."""
+        return self.weights, self.bias
+
+    @staticmethod
+    def train(neurons, inputs):
+        neurons[0].forward(inputs)
+        for idx, n1 in enumerate(neurons):
+            for idx2 in range(1, len(neurons)-1):
+                n2 = neurons[idx2]
+                n2.forward(n1.current_state)
+            n1.show_state()
 
 
 if __name__ == "__main__":
-    n1 = Neuron('1', 1)
-    n2 = Neuron('2', 2)
-    n1.update(n2)
-    n1.get_params()
+
+    n1 = Neuron(1)
+    n2 = Neuron(2)
+    n3 = Neuron(3)
+    layer = [n1, n2, n3]
+
+    # Random inputs of shape (2,)
+    inputs = np.random.randn(3)
+
+    for _ in range(3):
+        Neuron.train(layer, inputs)
+
+
+# TODO transduce signal to 3x2 structure
