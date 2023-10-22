@@ -18,7 +18,7 @@ class Neuron:
         """Derivative of the activation function."""
         return 1.0 - np.tanh(x) ** 2
 
-    def forward(self, inputs: np.ndarray) -> np.ndarray:
+    def get_state(self, inputs: np.ndarray) -> np.ndarray:
         """Calculate neuron output."""
         # Multiplying the inputs with the weight matrix and adding bias
         self.weights = self.activate(

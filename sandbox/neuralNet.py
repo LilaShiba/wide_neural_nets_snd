@@ -29,6 +29,9 @@ class NetRunner:
 
     @staticmethod
     def plot_losses(losses: list) -> None:
+        '''
+        Is the baby learning?
+        '''
         plt.plot(losses)
         plt.title("Training Loss over Epochs")
         plt.xlabel("Epoch")
