@@ -43,11 +43,10 @@ class Neuron:
 
         # TODO
         # HOW TO HANDLE VALUES OF VECTOR???
-        delta_input = np.dot(self.input, delta_input)
-        delta_state = np.dot(self.state, delta_state)
-        self.signal = [delta_input, delta_state, 1]
-        print("signal")
-        print(self.signal)
+        delta_input = sum(np.dot(self.input, delta_input))/3
+        delta_state = sum(np.dot(self.state, delta_state))/3
+        self.signal = np.array([delta_input, delta_state, 1])
+
         self.input = delta_input
         self.state = delta_state
     # Activation Functions
@@ -93,4 +92,4 @@ if __name__ == "__main__":
     n1 = Neuron(1.089)
     n2 = Neuron(1.08)
     n1.feed_forward(n2)
-    # n2.feed_forward(n1)
+    n2.feed_forward(n1)
