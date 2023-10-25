@@ -1,5 +1,6 @@
 import numpy as np
 import typing
+import matplotlib.pyplot as plt
 
 
 class Neuron:
@@ -13,30 +14,49 @@ class Neuron:
     def __init__(self, input: float, mu: float = 1, sigma: float = 1,  bias: float = 0.01):
         '''
         Creates a random neuron
+        self.weights = 3x2
+        self.signal = 3x1
         '''
+        self.input = input
+        self.output = input
+        self.bias = bias
 
-        self.weights = [[np.random.normal(mu, sigma)
-                         for _ in range(2)] for _ in range(3)]
+        self.weights = np.array([[np.random.normal(mu, sigma)
+                                  for _ in range(2)] for _ in range(3)])
         # -1 adds direction to magnituide of vector state
-        self.state = [input, np.random.normal(mu, sigma), 1]
-
-        # print(self.weights)
-        # print(self.state)
+        self.signal = np.array([input, np.random.normal(mu, sigma), 1])
+        # Introduce Time :)
+        self.state = np.random.randint(-1, 1)
 
     def feed_forward(self, parent_node):
         '''
         Feedforward in neural net uses the tanh activation function
         to bound answer within -1-1 range, introduces non-linearity
         '''
+        # 3x2
+        output = self.weights * parent_node.signal.reshape(-1, 1)
 
+        # 3x2
+        self.weights = self.activate(output)
+
+        delta_input, delta_state = self.weights.T
+
+        # TODO
+        # HOW TO HANDLE VALUES OF VECTOR???
+        delta_input = np.dot(self.input, delta_input)
+        delta_state = np.dot(self.state, delta_state)
+        self.signal = [delta_input, delta_state, 1]
+        print("signal")
+        print(self.signal)
+        self.input = delta_input
+        self.state = delta_state
     # Activation Functions
-    @staticmethod
-    def activate(x: np.ndarray) -> np.ndarray:
+
+    def activate(self, x: np.ndarray) -> np.ndarray:
         """The activation function (tanh)."""
         return np.tanh(x)
 
-    @staticmethod
-    def activate_derivative(x: np.ndarray) -> np.ndarray:
+    def activate_derivative(self, x: np.ndarray) -> np.ndarray:
         """Derivative of the activation function."""
         return 1.0 - np.tanh(x) ** 2
 
@@ -71,3 +91,6 @@ class Neuron:
 
 if __name__ == "__main__":
     n1 = Neuron(1.089)
+    n2 = Neuron(1.08)
+    n1.feed_forward(n2)
+    # n2.feed_forward(n1)
