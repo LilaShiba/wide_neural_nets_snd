@@ -20,37 +20,40 @@ class Neuron:
         self.input = input
         self.output = input
         self.bias = bias
-
-        self.weights = np.array([[np.random.normal(mu, sigma)
-                                  for _ in range(2)] for _ in range(3)])
+        self.weights = np.random.rand(2, 3)
+        # self.weights = np.array([[np.random.normal(mu, sigma)
+        #                           for _ in range(2)] for _ in range(3)])
         # -1 adds direction to magnituide of vector state
-        self.signal = np.array([input, np.random.normal(mu, sigma), 1])
+        self.signal = np.array(
+            [input, np.random.normal(mu, sigma), 1]).reshape(-1, 1)
         # Introduce Time :)
         self.state = np.random.randint(-1, 1)
 
+    # Training
     def feed_forward(self, parent_node):
         '''
         Feedforward in neural net uses the tanh activation function
         to bound answer within -1-1 range, introduces non-linearity
         '''
-        # 3x2
-        output = self.weights * parent_node.signal.reshape(-1, 1)
-
-        # 3x2
+        # 2x3 * 3x1
+        output = np.dot(self.weights, parent_node.signal)
+        # 2x3
+        delta_i, delta_s = list(output)
+        self.input = delta_i[0]
+        self.state = delta_s[0]
+        print(
+            f'output {output} and weights {self.weights} and state {self.state}')
+        print('')
+        # 2x3
         self.weights = self.activate(output)
 
-        delta_input, delta_state = self.weights.T
+        self.signal = np.array([self.input, self.state, 1]).reshape(-1, 1)
+        # recurrent (system dynamics by feeding input -> output -> input)
 
-        # TODO
-        # HOW TO HANDLE VALUES OF VECTOR???
-        delta_input = sum(np.dot(self.input, delta_input))/3
-        delta_state = sum(np.dot(self.state, delta_state))/3
-        self.signal = np.array([delta_input, delta_state, 1])
+    def backprop(self):
+        pass
 
-        self.input = delta_input
-        self.state = delta_state
     # Activation Functions
-
     def activate(self, x: np.ndarray) -> np.ndarray:
         """The activation function (tanh)."""
         return np.tanh(x)
@@ -60,7 +63,6 @@ class Neuron:
         return 1.0 - np.tanh(x) ** 2
 
     # Getters & Setters
-
     def get_state(self) -> list:
         '''
         show and return current state
@@ -90,6 +92,8 @@ class Neuron:
 
 if __name__ == "__main__":
     n1 = Neuron(1.089)
-    n2 = Neuron(1.08)
+    n2 = Neuron(n1.input)
     n1.feed_forward(n2)
     n2.feed_forward(n1)
+    print(n1.state)
+    print(n2.state)
