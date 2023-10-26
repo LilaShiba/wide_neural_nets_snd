@@ -36,17 +36,18 @@ class Neuron:
         to bound answer within -1-1 range, introduces non-linearity
         '''
         # 2x3 * 3x1
-        output = self.activate(np.dot(self.weights, parent_node.signal))
+        output = list(self.activate(np.dot(self.weights, parent_node.signal)))
+        self.weights = [[self.input, self.state], [
+            parent_node.input, parent_node.state], [output[0], output[1]]]
+
         # 2x3
-        delta_i, delta_s = list(output)
+        delta_i, delta_s = output
         self.input = delta_i[0]
         self.state = delta_s[0]
-
-        # 2x3
-        self.weights = output  # self.activate(output)
-
+        # 3x1
         self.signal = np.array([self.input, self.state, 1]).reshape(-1, 1)
         # recurrent (system dynamics by feeding input -> output -> input)
+        # 2x3
         print(
             f'output {output} and weights {self.weights} and state {self.state}')
         print('')
