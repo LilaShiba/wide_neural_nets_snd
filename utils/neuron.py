@@ -30,34 +30,41 @@ class Neuron:
         self.state = np.random.randint(-1, 1)
 
     # Training
-    def feed_forward(self, parent_node):
+    def feed_forward(self, signal):
         '''
         Feedforward in neural net uses the tanh activation function
         to bound answer within -1-1 range, introduces non-linearity
         '''
         # 2x3 * 3x1
+        # ensure shapes for that ole dot product
         if len(self.weights) != 2:
             self.weights = list(np.array(self.weights).T)
-        output = list(self.activate(np.dot(self.weights, parent_node.signal)))
-        self.weights = [[self.input, self.state], [
-            parent_node.input, parent_node.state], [output[0][0], output[1][0]]]
+        # list of scalars [input, state]
+        output = list(self.activate(np.dot(self.weights, signal)))
 
+        # TODO: HOW TO FINETUNE/UPDATE weights
+        self.weights = [[signal[0], signal[1]], [
+            self.input, self.state], [output[0][0], output[1][0]]]
+        # Notice time here for delta
         # 2x3
-        delta_i, delta_s = output
-        self.input = delta_i[0]
-        self.state = delta_s[0]
+        self.input = output[0][0]
+        self.state = output[1][0]
         # 3x1
         self.signal = np.array([self.input, self.state, 1]).reshape(-1, 1)
         # recurrent (system dynamics by feeding input -> output -> input)
         # 2x3
         print(
-            f'output {output} and weights {self.weights} and state {self.state}')
+            f'state: {self.state} | signal {self.signal}')
         print('')
+        return self
 
     def backprop(self):
+        '''
+        TODO: Create :)
+        '''
         pass
-
     # Activation Functions
+
     def activate(self, x: np.ndarray) -> np.ndarray:
         """The activation function (tanh)."""
         return np.tanh(x)
@@ -95,7 +102,11 @@ class Neuron:
 if __name__ == "__main__":
     n1 = Neuron(1.089)
     n2 = Neuron(n1.input)
-    n1.feed_forward(n2)
-    n2.feed_forward(n1)
+    n1.feed_forward(n2.signal)
+    n2.feed_forward(n1.signal)
     print(n1.state)
     print(n2.state)
+    plt.plot(np.tanh(n1.signal), label='tahn')
+    plt.plot(1 / (1 + np.exp(n1.signal)), label='sigmoid')
+    plt.legend()
+    plt.show()

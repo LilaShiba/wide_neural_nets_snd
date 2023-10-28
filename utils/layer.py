@@ -1,17 +1,27 @@
 import numpy as np
-from neuron import Neuron
+from utils.neuron import Neuron
+import matplotlib.pyplot as plt
 
 
 class Layer:
     def __init__(self, neuron_count: int):
-        self.neurons = [Neuron(i) for i in range(neuron_count)]
+        self.neurons = [Neuron(np.random.uniform(-1, 1))
+                        for _ in range(neuron_count)]
 
     def forward(self, inputs: np.ndarray) -> np.ndarray:
-        """Feed the input through all neurons in the layer."""
-        return np.array([neuron.get_state(inputs) for neuron in self.neurons])
+        """
+        Feed the input through all neurons in the layer.
+        inputs is neuron from previous layer :) 
+
+        """
+        return np.array([neuron.feed_forward(inputs)
+                         for neuron in self.neurons])
 
 
 if __name__ == "__main__":
-    layer_1 = Layer(124)
-    layer_1.forward(np.random.randn(3, 2))
+    transducer = Neuron(1.78293)
+    layer_1 = Layer(12)
+    layer_1 = layer_1.forward(transducer)
     print(layer_1)
+    for neuron in layer_1.neurons:
+        plt.plot(neuron.signal)
