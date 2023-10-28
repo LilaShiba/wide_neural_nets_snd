@@ -40,11 +40,13 @@ class Neuron:
         if len(self.weights) != 2:
             self.weights = list(np.array(self.weights).T)
         # list of scalars [input, state]
-        output = list(self.activate(np.dot(self.weights, signal)))
+        output = list(self.activate(np.dot(self.weights, signal), False))
 
         # TODO: HOW TO FINETUNE/UPDATE weights
-        self.weights = [[signal[0], signal[1]], [
-            self.input, self.state], [output[0][0], output[1][0]]]
+        # self.weights = [[signal[0], signal[1]], [
+        #     self.input, self.state], [output[0][0], output[1][0]]]
+
+        self.weights = output
         # Notice time here for delta
         # 2x3
         self.input = output[0][0]
@@ -65,8 +67,10 @@ class Neuron:
         pass
     # Activation Functions
 
-    def activate(self, x: np.ndarray) -> np.ndarray:
-        """The activation function (tanh)."""
+    def activate(self, x: np.ndarray, sig: bool = False) -> np.ndarray:
+        """The activation function (tanh is default)."""
+        if sig:
+            return 1 + 1/np.exp(-x)
         return np.tanh(x)
 
     def activate_derivative(self, x: np.ndarray) -> np.ndarray:
@@ -107,6 +111,6 @@ if __name__ == "__main__":
     print(n1.state)
     print(n2.state)
     plt.plot(np.tanh(n1.signal), label='tahn')
-    plt.plot(1 / (1 + np.exp(n1.signal)), label='sigmoid')
+    plt.plot(1 / (1 + np.exp(-n1.signal)), label='sigmoid')
     plt.legend()
     plt.show()
