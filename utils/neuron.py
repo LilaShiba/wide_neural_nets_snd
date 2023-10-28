@@ -1,15 +1,63 @@
 import numpy as np
+import typing
 import matplotlib.pyplot as plt
 
 
 class Neuron:
-    def __init__(self, layer: int, bias: float = 0.01):
-        self.bias = bias
-        self.layer = layer
-        # Making neuron a 2D matrix for weights
-        self.weights = np.random.randn(3, 2)
-        self.current_state = self.activate(self.weights + self.bias)
 
+    '''
+    weights: 3x2 weight matrix
+    state: 1x3 state input
+    Output: delta input
+    '''
+
+    def __init__(self, input: float, mu: float = 1, sigma: float = 1,  bias: float = 0.01):
+        '''
+        Creates a random neuron
+        self.weights = 3x2
+        self.signal = 3x1
+        '''
+        self.input = input
+        self.output = input
+        self.bias = bias
+        self.weights = np.random.rand(2, 3)
+        # self.weights = np.array([[np.random.normal(mu, sigma)
+        #                           for _ in range(2)] for _ in range(3)])
+        # -1 adds direction to magnituide of vector state
+        self.signal = np.array(
+            [input, np.random.normal(mu, sigma), 1]).reshape(-1, 1)
+        # Introduce Time :)
+        self.state = np.random.randint(-1, 1)
+
+    # Training
+    def feed_forward(self, parent_node):
+        '''
+        Feedforward in neural net uses the tanh activation function
+        to bound answer within -1-1 range, introduces non-linearity
+        '''
+        # 2x3 * 3x1
+        if len(self.weights) != 2:
+            self.weights = list(np.array(self.weights).T)
+        output = list(self.activate(np.dot(self.weights, parent_node.signal)))
+        self.weights = [[self.input, self.state], [
+            parent_node.input, parent_node.state], [output[0][0], output[1][0]]]
+
+        # 2x3
+        delta_i, delta_s = output
+        self.input = delta_i[0]
+        self.state = delta_s[0]
+        # 3x1
+        self.signal = np.array([self.input, self.state, 1]).reshape(-1, 1)
+        # recurrent (system dynamics by feeding input -> output -> input)
+        # 2x3
+        print(
+            f'output {output} and weights {self.weights} and state {self.state}')
+        print('')
+
+    def backprop(self):
+        pass
+
+    # Activation Functions
     def activate(self, x: np.ndarray) -> np.ndarray:
         """The activation function (tanh)."""
         return np.tanh(x)
@@ -18,52 +66,36 @@ class Neuron:
         """Derivative of the activation function."""
         return 1.0 - np.tanh(x) ** 2
 
-    def get_state(self, inputs: np.ndarray) -> np.ndarray:
-        """Calculate neuron output."""
-        # Multiplying the inputs with the weight matrix and adding bias
-        self.weights = self.activate(
-            np.cross(self.weights, inputs) + self.bias)
-        self.current_state = self.weights
-        return self.current_state
+    # Getters & Setters
+    def get_state(self) -> list:
+        '''
+        show and return current state
+        '''
+        return self.state
 
-    def show_state(self):
-        '''Graph current state in activation function'''
-        print(self.current_state)
-        plt.title(self.layer)
-        plt.plot(self.current_state)
-        plt.show()
+    def set_state(self, vector: list):
+        '''
+        update state
+        '''
+        self.state = vector
 
-    def set_params(self, weights: np.ndarray, bias: float) -> None:
-        """Set the neuron parameters."""
-        self.weights = weights
-        self.bias = bias
+    def get_weights(self) -> list:
+        '''
+        print & show weights
+        '''
+        return self.weights
 
-    def get_params(self) -> tuple:
-        """Get the neuron parameters."""
-        return self.weights, self.bias
-
-    @staticmethod
-    def train(neurons, inputs):
-        neurons[0].forward(inputs)
-        for idx, n1 in enumerate(neurons):
-            for idx2 in range(1, len(neurons)-1):
-                n2 = neurons[idx2]
-                n2.forward(n1.current_state)
-            n1.show_state()
+    def set_weights(self, vector: list):
+        '''
+        set weights to vector
+        '''
+        self.weights = vector
 
 
 if __name__ == "__main__":
-
-    n1 = Neuron(1)
-    n2 = Neuron(2)
-    n3 = Neuron(3)
-    layer = [n1, n2, n3]
-
-    # Random inputs of shape (2,)
-    inputs = np.random.randn(3)
-
-    for _ in range(3):
-        Neuron.train(layer, inputs)
-
-
-# TODO transduce signal to 3x2 structure
+    n1 = Neuron(1.089)
+    n2 = Neuron(n1.input)
+    n1.feed_forward(n2)
+    n2.feed_forward(n1)
+    print(n1.state)
+    print(n2.state)
