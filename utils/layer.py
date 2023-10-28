@@ -14,14 +14,14 @@ class Layer:
         inputs is neuron from previous layer :) 
 
         """
-        return np.array([neuron.feed_forward(inputs)
-                         for neuron in self.neurons])
+        self.neurons = np.array([neuron.feed_forward(inputs)
+                                 for neuron in self.neurons])
 
 
 if __name__ == "__main__":
     transducer = Neuron(1.78293)
     layer_1 = Layer(12)
-    layer_1 = layer_1.forward(transducer)
+    layer_1.forward(transducer)
     print(layer_1)
     for neuron in layer_1.neurons:
         plt.plot(neuron.signal)
