@@ -1,6 +1,7 @@
 import numpy as np
 import typing
 import matplotlib.pyplot as plt
+import networkx as nx
 
 
 class Neuron:
@@ -20,33 +21,50 @@ class Neuron:
         self.input = input
         self.output = input
         self.bias = bias
-        self.weights = np.random.rand(2, 3)
-        # self.weights = np.array([[np.random.normal(mu, sigma)
-        #                           for _ in range(2)] for _ in range(3)])
-        # -1 adds direction to magnituide of vector state
-        self.signal = np.array(
-            [input, np.random.normal(mu, sigma), 1]).reshape(-1, 1)
-        # Introduce Time :)
         self.state = np.random.randint(-1, 1)
+        # 3x2
+        self.weights = np.random.rand(3, 2)
+        # 1x3
+        self.signal = np.array(
+            [input, np.random.normal(mu, sigma), 1])
+        # -1 adds direction to magnituide of vector state
+        delta_input, delta_state = self.init_feed_forward(self.signal)
+
+        print(self.signal)
+        self.output = self.input = delta_input
 
     # Training
+
+    def init_feed_forward(self, signal):
+        '''
+        Feedforward in neural net uses the tanh activation function
+        to bound answer within -1-1 range, introduces non-linearity
+        '''
+        # 3x1
+        signal = self.activate(np.cross(self.weights, signal), False)
+        delta_input = signal[0][0]
+        delta_state = signal[1][0]
+        # 3x1
+        self.signal = np.array([delta_input, delta_state, 1])
+        # recurrent (system dynamics by feeding input -> output -> input)
+        # print(
+        #     f'state: {self.state} | signal {self.signal}')
+        # print('')
+        return delta_input, delta_state
+
     def feed_forward(self, signal):
         '''
         Feedforward in neural net uses the tanh activation function
         to bound answer within -1-1 range, introduces non-linearity
         '''
-        # 2x3 * 3x1
-        # ensure shapes for that ole dot product
-        if len(self.weights) != 2:
-            self.weights = list(np.array(self.weights).T)
-        # list of scalars [input, state]
-        output = list(self.activate(np.dot(self.weights, signal), False))
+
+        output = list(self.activate(self.weights.T * signal, False))
 
         # TODO: HOW TO FINETUNE/UPDATE weights
         # self.weights = [[signal[0], signal[1]], [
         #     self.input, self.state], [output[0][0], output[1][0]]]
 
-        self.weights = self.weights * output
+        self.weights = np.dot(self.weights, output)
         print(f'weights:{self.weights}')
 
         # Notice time here for delta
@@ -54,7 +72,7 @@ class Neuron:
         self.input = output[0][0]
         self.state = output[1][0]
         # 3x1
-        self.signal = np.array([self.input, self.state, 1]).reshape(-1, 1)
+        self.signal = np.array([self.input, self.state, 1])
         # recurrent (system dynamics by feeding input -> output -> input)
         # 2x3
         print(
@@ -108,9 +126,9 @@ class Neuron:
 if __name__ == "__main__":
     n1 = Neuron(1.089)
     n2 = Neuron(n1.input)
-    n1.feed_forward(n2.signal)
-    n2.feed_forward(n1.signal)
-    n1.feed_forward(n2.signal)
+    n1.feed_forward(n2.signal[0])
+    n2.feed_forward(n1.signal[0])
+    n1.feed_forward(n2.signal[0])
     print(n1.state)
     print(n2.state)
     plt.plot(np.tanh(n1.signal), label='tahn')
