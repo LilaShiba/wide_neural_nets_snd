@@ -46,7 +46,9 @@ class Neuron:
         # self.weights = [[signal[0], signal[1]], [
         #     self.input, self.state], [output[0][0], output[1][0]]]
 
-        self.weights = output
+        self.weights = self.weights * output
+        print(f'weights:{self.weights}')
+
         # Notice time here for delta
         # 2x3
         self.input = output[0][0]
@@ -108,6 +110,7 @@ if __name__ == "__main__":
     n2 = Neuron(n1.input)
     n1.feed_forward(n2.signal)
     n2.feed_forward(n1.signal)
+    n1.feed_forward(n2.signal)
     print(n1.state)
     print(n2.state)
     plt.plot(np.tanh(n1.signal), label='tahn')
