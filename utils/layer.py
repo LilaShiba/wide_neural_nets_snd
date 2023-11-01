@@ -8,13 +8,13 @@ class Layer:
         self.neurons = [Neuron(np.random.uniform(-1, 1))
                         for _ in range(neuron_count)]
 
-    def forward(self, inputs: np.ndarray) -> np.ndarray:
+    def forward(self, input: object) -> np.ndarray:
         """
         Feed the input through all neurons in the layer.
         inputs is neuron from previous layer :) 
 
         """
-        self.neurons = np.array([neuron.feed_forward(inputs)
+        self.neurons = np.array([neuron.feed_forward(neuron.signal)
                                  for neuron in self.neurons])
 
 
@@ -25,3 +25,4 @@ if __name__ == "__main__":
     print(layer_1)
     for neuron in layer_1.neurons:
         plt.plot(neuron.signal)
+        plt.show()
