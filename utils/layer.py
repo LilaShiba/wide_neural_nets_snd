@@ -18,6 +18,19 @@ class Layer:
         self.neurons = np.array([neuron.feed_forward(neuron.signal)
                                  for neuron in self.neurons])
 
+    def graph(self):
+        '''
+        show vectors
+        input, state
+        '''
+        for n in self.neurons:
+            t = [i for i in n.signal if i != 1]
+            plt.plot(t)
+        plt.title('Layer Output')
+        plt.xlabel('time step')
+        plt.ylabel('input value -> state')
+        plt.show()
+
 
 if __name__ == "__main__":
     transducer = Neuron(1.78293)
