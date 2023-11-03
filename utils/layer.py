@@ -1,11 +1,12 @@
 import numpy as np
 from utils.neuron import Neuron
 import matplotlib.pyplot as plt
+import heapq
 
 
 class Layer:
     def __init__(self, neuron_count: int):
-        self.neurons = [Neuron(np.random.uniform(-1, 1))
+        self.neurons = [Neuron(1.221)
                         for _ in range(neuron_count)]
 
     def forward(self, input: object) -> np.ndarray:

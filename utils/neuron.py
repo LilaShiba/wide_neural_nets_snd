@@ -2,6 +2,7 @@ import numpy as np
 import typing
 import matplotlib.pyplot as plt
 import networkx as nx
+import heapq
 
 
 class Neuron:
@@ -18,6 +19,8 @@ class Neuron:
         self.weights = 3x2
         self.signal = 3x1
         '''
+        self.id = None
+        self.edges = []
         self.input = input
         self.bias = bias
         self.state = np.random.randint(-1, 1)
@@ -50,11 +53,25 @@ class Neuron:
        # self.weights = np.array(self.weights)
         return self
 
+    def edges_delta(self, k: int = 5, layer: list = None, threshold: float = 0.5) -> heapq:
+        '''
+        finds knn closet edges :)
+        i.e, does it fire or nah
+        '''
+        if not layer:
+            return ValueError('not great, need a list')
+
+        res = [abs(neuron.input - self.input)
+               for neuron in layer.neurons if abs(neuron.input - self.input) < threshold]
+
+        return res
+
     def backprop(self):
         '''
         TODO: Create :)
         '''
         pass
+
     # Activation Functions
 
     def activate(self, x: np.ndarray, sig: bool = False) -> np.ndarray:
