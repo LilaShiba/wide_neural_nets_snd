@@ -61,7 +61,7 @@ class Neuron:
         if not layer:
             return ValueError('not great, need a list')
 
-        res = [abs(neuron.input - self.input)
+        res = [(abs(neuron.input - self.input), neuron)
                for neuron in layer.neurons if abs(neuron.input - self.input) < threshold]
 
         return res
@@ -108,6 +108,12 @@ class Neuron:
         set weights to vector
         '''
         self.weights = vector
+
+    def set_id(self, id: int):
+        '''
+        set id for neural network
+        '''
+        self.id = id
 
 
 if __name__ == "__main__":
