@@ -38,7 +38,7 @@ class Network:
                 self.graph.add_node(n)
                 nodes += 1
 
-    def layers_cycle(self):
+    def layers_cycle(self, k: int = 5):
         '''
         update connections of neurons
         from layer to layer
@@ -46,8 +46,8 @@ class Network:
 
         for l_idx, layer in enumerate(self.layers[:-1]):
             for idx, n in enumerate(layer.neurons):
-                self.edge_dict[idx] = n.edges_delta(5, self.layers[l_idx + 1])
+                self.edge_dict[idx] = n.edges_delta(k, self.layers[l_idx + 1])
                 sl = sorted(self.edge_dict[idx])
-                for e in sl[0:5]:
+                for e in sl[0:k]:
                     self.graph.add_edge(
                         idx, e[1].id, weight=abs(n.input - e[1].input))

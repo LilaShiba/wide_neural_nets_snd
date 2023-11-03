@@ -62,7 +62,7 @@ class Neuron:
             return ValueError('not great, need a list')
 
         res = [(abs(neuron.input - self.input), neuron)
-               for neuron in layer.neurons if abs(neuron.input - self.input) < threshold]
+               for neuron in layer.neurons if abs(neuron.input - self.input) <= threshold]
 
         return res
 
