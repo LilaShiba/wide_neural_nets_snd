@@ -7,3 +7,9 @@ Implementation of the following <a href='<https://arxiv.org/abs/2305.15945'>pape
 ## Neurons abstracted into layer class
 
 <img src="graphs/output_labled.png" >
+
+## Layers as network
+
+connections are based on k strongest connections as measured by the  min( [abs(difference between states) .... nth compare], k )
+
+<img src="graphs/network.png">
