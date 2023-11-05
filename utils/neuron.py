@@ -2,6 +2,7 @@ import numpy as np
 import typing
 import matplotlib.pyplot as plt
 import networkx as nx
+import heapq
 
 
 class Neuron:
@@ -18,8 +19,9 @@ class Neuron:
         self.weights = 3x2
         self.signal = 3x1
         '''
+        self.id = None
+        self.edges = []
         self.input = input
-        self.output = input
         self.bias = bias
         self.state = np.random.randint(-1, 1)
         # 3x2
@@ -27,64 +29,49 @@ class Neuron:
         # 1x3
         self.signal = np.array(
             [input, np.random.normal(mu, sigma), 1])
-        # -1 adds direction to magnituide of vector state
-        delta_input, delta_state = self.init_feed_forward(self.signal)
-
-        print(self.signal)
-        self.output = self.input = delta_input
 
     # Training
-
-    def init_feed_forward(self, signal):
-        '''
-        Feedforward in neural net uses the tanh activation function
-        to bound answer within -1-1 range, introduces non-linearity
-        '''
-        # 3x1
-        signal = self.activate(np.cross(self.weights, signal), False)
-        delta_input = signal[0][0]
-        delta_state = signal[1][0]
-        # 3x1
-        self.signal = np.array([delta_input, delta_state, 1])
-        # recurrent (system dynamics by feeding input -> output -> input)
-        # print(
-        #     f'state: {self.state} | signal {self.signal}')
-        # print('')
-        return delta_input, delta_state
-
     def feed_forward(self, signal):
         '''
         Feedforward in neural net uses the tanh activation function
         to bound answer within -1-1 range, introduces non-linearity
         '''
+        # print('w', self.weights)
 
-        output = list(self.activate(self.weights.T * signal, False))
-
-        # TODO: HOW TO FINETUNE/UPDATE weights
-        # self.weights = [[signal[0], signal[1]], [
-        #     self.input, self.state], [output[0][0], output[1][0]]]
-
-        self.weights = np.dot(self.weights, output)
-        print(f'weights:{self.weights}')
-
-        # Notice time here for delta
+        self.weights = self.activate(self.weights.T * signal, False)
         # 2x3
-        self.input = output[0][0]
-        self.state = output[1][0]
+        output = np.dot(self.weights, signal)
+        # self.weights
+        self.weights = self.weights.T
+        # print(f'weights {self.weights}')
+        self.input = output[0]
+        self.state = output[1]
         # 3x1
         self.signal = np.array([self.input, self.state, 1])
         # recurrent (system dynamics by feeding input -> output -> input)
         # 2x3
-        print(
-            f'state: {self.state} | signal {self.signal}')
-        print('')
+       # self.weights = np.array(self.weights)
         return self
+
+    def edges_delta(self, k: int = 5, layer: list = None, threshold: float = 0.5) -> heapq:
+        '''
+        finds knn closet edges :)
+        i.e, does it fire or nah
+        '''
+        if not layer:
+            return ValueError('not great, need a list')
+
+        res = [(abs(neuron.input - self.input), neuron)
+               for neuron in layer.neurons if abs(neuron.input - self.input) <= threshold]
+
+        return res
 
     def backprop(self):
         '''
         TODO: Create :)
         '''
         pass
+
     # Activation Functions
 
     def activate(self, x: np.ndarray, sig: bool = False) -> np.ndarray:
@@ -122,15 +109,22 @@ class Neuron:
         '''
         self.weights = vector
 
+    def set_id(self, id: int):
+        '''
+        set id for neural network
+        '''
+        self.id = id
+
 
 if __name__ == "__main__":
+
     n1 = Neuron(1.089)
     n2 = Neuron(n1.input)
-    n1.feed_forward(n2.signal[0])
-    n2.feed_forward(n1.signal[0])
-    n1.feed_forward(n2.signal[0])
-    print(n1.state)
-    print(n2.state)
+    n1.feed_forward(n1.signal)
+
+    n2.feed_forward(n1.signal)
+    n1.feed_forward(n2.signal)
+
     plt.plot(np.tanh(n1.signal), label='tahn')
     plt.plot(1 / (1 + np.exp(-n1.signal)), label='sigmoid')
     plt.legend()

@@ -1,59 +1,53 @@
-import matplotlib.pyplot as plt
 import numpy as np
-from layer import Layer
+import matplotlib.pyplot as plt
+from collections import defaultdict
+import typing
+import networkx as nx
 
 
-class NetRunner:
-    def __init__(self, layer_sizes: list):
-        self.layers = []
-        for size in layer_sizes:
-            self.layers.append(Layer(size))
+class Network:
 
-    def feedforward(self, x: np.ndarray) -> np.ndarray:
+    '''
+    networkx graph of connected neurons from
+    layer to layer
+    '''
+
+    def __init__(self, layers: list = None):
+        '''
+        input: a list of layer objects
+        creates: empty multi-graph
+        '''
+        self.layers = layers
+        self.graph = nx.MultiGraph()
+        self.edge_dict = defaultdict()
+
+    def int_graph(self, layers: list = None):
+        '''
+        create networkx graph between layers
+        '''
+
+        if layers:
+            self.layers = layers
+
+        nodes = 0
+        # traverse layers
         for layer in self.layers:
-            x = layer.forward(x)
-        return x
+            # traverse nodes in each layer
+            for n in layer.neurons:
+                n.set_id(nodes)
+                self.graph.add_node(n)
+                nodes += 1
 
-    def mse_loss(self, predictions: np.ndarray, targets: np.ndarray) -> float:
-        return ((predictions - targets) ** 2).mean()
-
-    def train(self, X: np.ndarray, y: np.ndarray, epochs: int) -> list:
-        # Dummy training loop just to show losses. Actual training not implemented.
-        losses = []
-        for epoch in range(epochs):
-            predictions = np.array([self.feedforward(xi) for xi in X])
-            loss = self.mse_loss(predictions, y)
-            losses.append(loss)
-            print(f"Epoch {epoch+1}/{epochs}, Loss: {loss:.5f}")
-        return losses
-
-    @staticmethod
-    def plot_losses(losses: list) -> None:
+    def layers_cycle(self, k: int = 5):
         '''
-        Is the baby learning?
+        update connections of neurons
+        from layer to layer
         '''
-        plt.plot(losses)
-        plt.title("Training Loss over Epochs")
-        plt.xlabel("Epoch")
-        plt.ylabel("Mean Squared Error (MSE) Loss")
-        plt.show()
 
-
-if __name__ == "__main__":
-    # Example data
-    X = np.array([[0, 0], [0, 1], [1, 0], [1, 1]])
-    y = np.array([[0, 0, 0, 0], [1, 1, 1, 1], [
-                 1, 1, 1, 1], [0, 0, 0, 0]])  # XOR problem
-
-    # Deep network with three hidden layers
-    deep_network = NetRunner([10, 5, 5, 2])
-
-    # Wide network with one hidden layer having a lot of neurons
-    wide_network = NetRunner([10, 100, 2])
-
-    # Both wide and deep network
-    deep_wide_network = NetRunner([10, 100, 100, 100, 2])
-
-    # Train and plot
-    losses = wide_network.train(X, y, epochs=10)
-    NetRunner.plot_losses(losses)
+        for l_idx, layer in enumerate(self.layers[:-1]):
+            for idx, n in enumerate(layer.neurons):
+                self.edge_dict[idx] = n.edges_delta(k, self.layers[l_idx + 1])
+                sl = sorted(self.edge_dict[idx])
+                for e in sl[0:k]:
+                    self.graph.add_edge(
+                        idx, e[1].id, weight=abs(n.input - e[1].input))
